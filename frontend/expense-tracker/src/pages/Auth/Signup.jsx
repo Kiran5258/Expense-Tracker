@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import AuthLayout from "../../components/layout/AuthLayout";
 import { Link, useNavigate } from "react-router-dom";
 import Input from "../../components/input/Input";
 import { validateEmail } from "../../utils/helper";
 import ProfilePhotoSelector from "../../components/input/ProfilePhotoSelector";
-
+import axiosInstance from "../../utils/axiosInstance";
+import { API_PATHS } from "../../utils/apiPath";
+import { userContext } from "../../context/UserContext";
+import updateImage from "../../utils/updateImage";
 function Signup() {
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
@@ -12,7 +15,7 @@ function Signup() {
   const [profilepic, setProfilepic] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
+  const { updateUser } = useContext(userContext);
   // handle signup form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,6 +35,31 @@ function Signup() {
     setError("");
 
     //signup api call
+    try{
+
+      //update image url
+      const imageupdate=await updateImage(profilepic);
+      profileimageurl=imageupdate.imageUrl || "";
+
+      const response=await axiosInstance.post(API_PATHS.AUTH.REGISTER,{
+        fullname,
+        email,
+        password
+      })
+      const {token,user}=response.data;
+      if(token){
+        localStorage.setItem('token',token);
+        updateUser(user);
+        navigate("/dashboard");
+    
+      }
+    }catch(err){
+       if (err.response && err.response.data.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    }
   };
 
   return (

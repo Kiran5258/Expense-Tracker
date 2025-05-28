@@ -6,9 +6,11 @@ import Signup from '../src/pages/Auth/Signup';
 import Home from '../src/pages/Dashboard/Home'
 import Income from '../src/pages/Dashboard/Income'
 import Expense from '../src/pages/Dashboard/Expense';
+import Userprovider from './context/UserContext';
 export default function App() {
   return (
     <div>
+      <Userprovider>
       <Router>
         <Routes>
           <Route path='/'element={<Root/>}/>
@@ -19,6 +21,7 @@ export default function App() {
           <Route path='/expense'exact element={<Expense/>}/>
        </Routes>
       </Router>
+      </Userprovider>
     </div>
   )
 }

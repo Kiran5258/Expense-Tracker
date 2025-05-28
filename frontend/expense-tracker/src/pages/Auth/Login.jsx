@@ -1,31 +1,52 @@
-import React, { useState } from 'react'
-import AuthLayout from '../../components/layout/AuthLayout'
-import { Link, useNavigate } from 'react-router-dom';
-import Input from '../../components/input/Input';
-import { validateEmail } from '../../utils/helper';
-
+import React, { useContext, useState } from "react";
+import AuthLayout from "../../components/layout/AuthLayout";
+import { Link, useNavigate } from "react-router-dom";
+import Input from "../../components/input/Input";
+import { validateEmail } from "../../utils/helper";
+import axiosInstance from "../../utils/axiosInstance";
+import { API_PATHS } from "../../utils/apiPath";
+import { userContext } from "../../context/UserContext";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const { updateUser } = useContext(userContext);
 
   const navigate = useNavigate();
 
-  const handleSubmitLogin = (e) => {
+  const handleSubmitLogin = async (e) => {
     e.preventDefault();
-    
+
     // Simple validation example
     if (!validateEmail(email)) {
       setError("Please Enter a valid email address");
       return;
     }
-    if(!password){
+    if (!password) {
       setError("please enter the password");
       return;
     }
     setError("");
 
     //Login API call
+    try {
+      const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
+        email,
+        password,
+      });
+      const { token, user } = response.data;
+      if (token) {
+        localStorage.setItem("token", token);
+        updateUser(user);
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      if (err.response && err.response.data.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    }
   };
 
   return (
@@ -53,21 +74,20 @@ function Login() {
             placeholder="Min 8 characters"
             type="password"
           />
-         {error && <p className='text-red-500 text-xs pb-2.5'>{error}</p>}
-          <button
-            type="submit"
-            className="btn-primary"
-          >
+          {error && <p className="text-red-500 text-xs pb-2.5">{error}</p>}
+          <button type="submit" className="btn-primary">
             Log In
           </button>
-          <p className='text-slate-800 text-[13px] mt-3'>
+          <p className="text-slate-800 text-[13px] mt-3">
             Don't have an accont? {""}
-            <Link className="font-medium text-primary underline" to={"/signup"}>Signup</Link>
+            <Link className="font-medium text-primary underline" to={"/signup"}>
+              Signup
+            </Link>
           </p>
         </form>
       </div>
     </AuthLayout>
-  )
+  );
 }
 
 export default Login;
