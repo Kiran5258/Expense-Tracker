@@ -40,11 +40,12 @@ function Signup() {
       //update image url
       const imageupdate=await updateImage(profilepic);
       profileimageurl=imageupdate.imageUrl || "";
-
+      console.log(profileimageurl)
       const response=await axiosInstance.post(API_PATHS.AUTH.REGISTER,{
         fullname,
         email,
-        password
+        password,
+        profileimageurl
       })
       const {token,user}=response.data;
       if(token){
